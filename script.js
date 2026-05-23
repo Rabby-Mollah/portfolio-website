@@ -1041,6 +1041,35 @@ function initDashboard() {
     document.getElementById('projectModal').classList.add('open');
   });
 
+  document.getElementById('addSkillBtn')?.addEventListener('click', () => {
+    document.getElementById('skillId').value = '';
+    document.getElementById('skillName').value = '';
+    document.getElementById('skillCategory').value = 'engineering';
+    document.getElementById('skillIcon').value = '';
+    document.getElementById('skillPct').value = '80';
+    document.getElementById('skillModal').classList.add('open');
+  });
+
+  document.getElementById('addExpBtn')?.addEventListener('click', () => {
+    document.getElementById('expId').value = '';
+    document.getElementById('expRole').value = '';
+    document.getElementById('expOrg').value = '';
+    document.getElementById('expDate').value = '';
+    document.getElementById('expType').value = 'work';
+    document.getElementById('expIcon').value = '';
+    document.getElementById('expDesc').value = '';
+    document.getElementById('expModal').classList.add('open');
+  });
+
+  document.getElementById('addAchBtn')?.addEventListener('click', () => {
+    document.getElementById('achId').value = '';
+    document.getElementById('achTitle').value = '';
+    document.getElementById('achYear').value = '';
+    document.getElementById('achIcon').value = '';
+    document.getElementById('achDesc').value = '';
+    document.getElementById('achModal').classList.add('open');
+  });
+
   document.getElementById('saveProject')?.addEventListener('click', async () => {
     const id = document.getElementById('projectId').value || Date.now();
     const newProj = {
