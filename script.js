@@ -14,27 +14,38 @@ const firebaseConfig = {
   measurementId: "G-BQVHRYJVPN"
 };
 
-// Only initialize if firebase is loaded (to prevent errors if script is missing)
 let db = null;
-if (typeof firebase !== 'undefined') {
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.firestore();
+try {
+  if (typeof firebase !== 'undefined') {
+    // Prevent duplicate app init error
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    db = firebase.firestore();
+    console.log('[Firebase] Firestore initialized successfully.');
+  } else {
+    console.warn('[Firebase] firebase SDK not found. db = null.');
+  }
+} catch(err) {
+  console.error('[Firebase] Init failed:', err);
 }
 
 async function getCloudData(key, def) {
-  if (!db) return def;
+  if (!db) { console.warn('[Firebase] getCloudData skipped — db is null'); return def; }
   try {
     const doc = await db.collection('portfolio').doc(key).get();
     if (doc.exists) return doc.data().value;
-  } catch(e) { console.error('Firebase read error:', e); }
+  } catch(e) { console.error('[Firebase] Read error for key:', key, e); }
   return def;
 }
 
 async function setCloudData(key, val) {
-  if (!db) return;
+  if (!db) { console.error('[Firebase] setCloudData FAILED — db is null! Firebase SDK may not be loaded.'); return; }
+  console.log('[Firebase] Writing key:', key, val);
   try {
     await db.collection('portfolio').doc(key).set({ value: val });
-  } catch(e) { console.error('Firebase write error:', e); }
+    console.log('[Firebase] Write SUCCESS for key:', key);
+  } catch(e) { console.error('[Firebase] Write FAILED for key:', key, e); }
 }
 
 /* ─── DOM Ready ─── */
