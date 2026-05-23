@@ -3,14 +3,38 @@
    Alex Mercer Engineering Portfolio
    =================================================== */
 
-// Removed API_BASE since we are using LocalStorage backend
-const STORAGE_PREFIX = 'portfolio_';
-function getLocalData(key, def) {
-  const data = localStorage.getItem(STORAGE_PREFIX + key);
-  return data ? JSON.parse(data) : def;
+// Firebase Config & Initialization
+const firebaseConfig = {
+  apiKey: "AIzaSyBnZu6BbEVeTQnVXaM5rxeOuVk81tX2N_M",
+  authDomain: "portfolio-67bed.firebaseapp.com",
+  projectId: "portfolio-67bed",
+  storageBucket: "portfolio-67bed.firebasestorage.app",
+  messagingSenderId: "260497213060",
+  appId: "1:260497213060:web:c13d34963faab0b69c24d1",
+  measurementId: "G-BQVHRYJVPN"
+};
+
+// Only initialize if firebase is loaded (to prevent errors if script is missing)
+let db = null;
+if (typeof firebase !== 'undefined') {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
 }
-function setLocalData(key, val) {
-  localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(val));
+
+async function getCloudData(key, def) {
+  if (!db) return def;
+  try {
+    const doc = await db.collection('portfolio').doc(key).get();
+    if (doc.exists) return doc.data().value;
+  } catch(e) { console.error('Firebase read error:', e); }
+  return def;
+}
+
+async function setCloudData(key, val) {
+  if (!db) return;
+  try {
+    await db.collection('portfolio').doc(key).set({ value: val });
+  } catch(e) { console.error('Firebase write error:', e); }
 }
 
 /* ─── DOM Ready ─── */
@@ -346,7 +370,7 @@ function initSkills() {
 }
 
 async function fetchAndRenderSkills() {
-  const localSkills = getLocalData('skills', null);
+  const localSkills = await getCloudData('skills', null);
   if (localSkills && localSkills.length > 0) {
     const cats = {};
     localSkills.forEach(s => {
@@ -447,7 +471,7 @@ function initProjects() {
 }
 
 async function fetchAndRenderProjects() {
-  const localProjects = getLocalData('projects', null);
+  const localProjects = await getCloudData('projects', null);
   if (localProjects && localProjects.length > 0) allProjects = localProjects;
 
   renderProjects();
@@ -516,7 +540,7 @@ function initDesignGallery() {
 }
 
 async function fetchAndRenderDesigns() {
-  const localDesigns = getLocalData('designs', null);
+  const localDesigns = await getCloudData('designs', null);
   if (localDesigns && localDesigns.length > 0) activeDesigns = localDesigns;
 
   renderDesigns(defaultDesigns);
@@ -631,7 +655,7 @@ function initExperience() {
 }
 
 async function fetchAndRenderExperience() {
-  const localExp = getLocalData('experiences', null);
+  const localExp = await getCloudData('experiences', null);
   if (localExp && localExp.length > 0) {
     localExp.forEach(e => {
       const cat = e.type || 'work';
@@ -686,7 +710,7 @@ function initAchievements() {
 
 async function fetchAndRenderAchievements() {
   let achievements = [...defaultAchievements];
-  const localAch = getLocalData('achievements', null);
+  const localAch = await getCloudData('achievements', null);
   if (localAch && localAch.length > 0) achievements = localAch;
 
   renderAchievements(achievements);
@@ -753,7 +777,7 @@ function initTestimonials() {
 }
 
 async function fetchAndRenderTestimonials() {
-  const localTest = getLocalData('testimonials', null);
+  const localTest = await getCloudData('testimonials', null);
   if (localTest && localTest.length > 0) testimonials = localTest;
 
   renderTestimonials();
@@ -870,7 +894,7 @@ function clearErrors() {
 
 /* ─── Contact Info from API ─── */
 async function loadContactInfo() {
-  const data = getLocalData('settings', {});
+  const data = await getCloudData('settings', {});
   if (data.email) {
     const emailEl = document.querySelector('#contactEmail a');
     if (emailEl) { emailEl.textContent = data.email; emailEl.href = 'mailto:' + data.email; }
@@ -903,7 +927,7 @@ async function checkApiStatus() {
   const dot = document.getElementById('apiStatus');
   const text = document.getElementById('apiStatusText');
   dot?.classList.add('online');
-  if (text) text.textContent = 'Local Storage DB';
+  if (text) text.textContent = 'Firebase Connected';
 
 }
 
@@ -983,7 +1007,7 @@ function initDashboard() {
     document.getElementById('projectModal').classList.add('open');
   });
 
-  document.getElementById('saveProject')?.addEventListener('click', () => {
+  document.getElementById('saveProject')?.addEventListener('click', async () => {
     const id = document.getElementById('projectId').value || Date.now();
     const newProj = {
       id: id,
@@ -995,20 +1019,20 @@ function initDashboard() {
       demo: document.getElementById('projectDemo').value,
       image: document.getElementById('projectImage').value || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600'
     };
-    let projs = getLocalData('projects', defaultProjects);
+    let projs = await getCloudData('projects', defaultProjects);
     const existingIdx = projs.findIndex(p => p.id == id);
     if(existingIdx >= 0) projs[existingIdx] = newProj;
     else projs.push(newProj);
-    setLocalData('projects', projs);
+    await setCloudData('projects', projs);
     document.getElementById('projectModal').classList.remove('open');
-    loadDashboardData();
+    await loadDashboardData();
     showToast('Project saved successfully');
   });
 }
 
-function loadDashboardData() {
+async function loadDashboardData() {
   // Populate projects table
-  const projs = getLocalData('projects', defaultProjects);
+  const projs = await getCloudData('projects', defaultProjects);
   const pt = document.getElementById('projectsTable');
   if (pt) {
     pt.innerHTML = projs.map(p => `
@@ -1025,11 +1049,12 @@ function loadDashboardData() {
     `).join('');
   }
   
-  document.getElementById('statProjects').textContent = projs.length;
+  const sp = document.getElementById('statProjects');
+  if(sp) sp.textContent = projs.length;
 }
 
-window.editProject = function(id) {
-  const projs = getLocalData('projects', defaultProjects);
+window.editProject = async function(id) {
+  const projs = await getCloudData('projects', defaultProjects);
   const p = projs.find(x => x.id == id);
   if(!p) return;
   document.getElementById('projectId').value = p.id;
@@ -1043,12 +1068,12 @@ window.editProject = function(id) {
   document.getElementById('projectModal').classList.add('open');
 }
 
-window.deleteProject = function(id) {
+window.deleteProject = async function(id) {
   if(confirm('Delete this project?')) {
-    let projs = getLocalData('projects', defaultProjects);
+    let projs = await getCloudData('projects', defaultProjects);
     projs = projs.filter(x => x.id != id);
-    setLocalData('projects', projs);
-    loadDashboardData();
+    await setCloudData('projects', projs);
+    await loadDashboardData();
   }
 }
 
