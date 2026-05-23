@@ -242,7 +242,7 @@ function initHeroCanvas() {
 function initTypingEffect() {
   const el = document.getElementById('typedText');
   if (!el) return;
-  const roles = ['Robotics Engineer', 'Mechatronics Designer', 'Creative Organizer', 'CAD Designer', 'Embedded Systems Dev', 'Event Manager'];
+  const roles = window.profileRoles || ['Robotics Engineer', 'Mechatronics Designer', 'Creative Organizer', 'CAD Designer', 'Embedded Systems Dev', 'Event Manager'];
   let roleIdx = 0, charIdx = 0, deleting = false;
 
   function type() {
@@ -366,7 +366,27 @@ function initSkills() {
       renderSkills(currentSkillCategory);
     });
   });
+  fetchAndRenderProfile();
   fetchAndRenderSkills();
+}
+
+async function fetchAndRenderProfile() {
+  const profile = await getCloudData('profile', null);
+  if (!profile) return;
+  
+  if (document.getElementById('heroFirstName')) document.getElementById('heroFirstName').textContent = profile.firstName;
+  if (document.getElementById('heroLastName')) document.getElementById('heroLastName').textContent = profile.lastName;
+  if (document.getElementById('heroBioText')) document.getElementById('heroBioText').innerHTML = profile.shortBio;
+  if (document.getElementById('aboutBio')) document.getElementById('aboutBio').innerHTML = profile.bio;
+  if (document.getElementById('aboutLocation')) document.getElementById('aboutLocation').textContent = profile.location;
+  if (document.getElementById('aboutEducation')) document.getElementById('aboutEducation').textContent = profile.degree;
+  if (document.getElementById('aboutUniversity')) document.getElementById('aboutUniversity').textContent = profile.university;
+  if (document.getElementById('heroPhoto')) document.getElementById('heroPhoto').src = profile.photoUrl;
+  if (document.getElementById('aboutPhoto')) document.getElementById('aboutPhoto').src = profile.photoUrl;
+  
+  if (profile.roles) {
+    window.profileRoles = profile.roles.split(',').map(s=>s.trim());
+  }
 }
 
 async function fetchAndRenderSkills() {
@@ -1027,6 +1047,93 @@ function initDashboard() {
     document.getElementById('projectModal').classList.remove('open');
     await loadDashboardData();
     showToast('Project saved successfully');
+  });
+
+  // --- Add Profile Save ---
+  document.getElementById('saveProfile')?.addEventListener('click', async () => {
+    const profile = {
+      firstName: document.getElementById('pfFirstName').value,
+      lastName: document.getElementById('pfLastName').value,
+      shortBio: document.getElementById('pfShortBio').value,
+      roles: document.getElementById('pfRoles').value,
+      location: document.getElementById('pfLocation').value,
+      degree: document.getElementById('pfDegree').value,
+      university: document.getElementById('pfUniversity').value,
+      bio: document.getElementById('pfBio').value,
+      photoUrl: document.getElementById('pfPhotoUrl').value
+    };
+    await setCloudData('profile', profile);
+    showToast('Profile saved successfully');
+  });
+
+  // --- Add Skill Save ---
+  document.getElementById('saveSkill')?.addEventListener('click', async () => {
+    const id = document.getElementById('skillId').value || Date.now();
+    const newSkill = {
+      id: id,
+      name: document.getElementById('skillName').value,
+      category: document.getElementById('skillCategory').value,
+      icon: document.getElementById('skillIcon').value,
+      percentage: parseInt(document.getElementById('skillPct').value)
+    };
+    let skills = await getCloudData('skills', []);
+    const existingIdx = skills.findIndex(s => s.id == id);
+    if(existingIdx >= 0) skills[existingIdx] = newSkill;
+    else skills.push(newSkill);
+    await setCloudData('skills', skills);
+    document.getElementById('skillModal').classList.remove('open');
+    showToast('Skill saved successfully');
+  });
+
+  // --- Add Experience Save ---
+  document.getElementById('saveExp')?.addEventListener('click', async () => {
+    const id = document.getElementById('expId').value || Date.now();
+    const newExp = {
+      id: id,
+      role: document.getElementById('expRole').value,
+      org: document.getElementById('expOrg').value,
+      date: document.getElementById('expDate').value,
+      type: document.getElementById('expType').value,
+      icon: document.getElementById('expIcon').value,
+      desc: document.getElementById('expDesc').value
+    };
+    let exps = await getCloudData('experiences', []);
+    const existingIdx = exps.findIndex(e => e.id == id);
+    if(existingIdx >= 0) exps[existingIdx] = newExp;
+    else exps.push(newExp);
+    await setCloudData('experiences', exps);
+    document.getElementById('expModal').classList.remove('open');
+    showToast('Experience saved successfully');
+  });
+
+  // --- Add Achievement Save ---
+  document.getElementById('saveAch')?.addEventListener('click', async () => {
+    const id = document.getElementById('achId').value || Date.now();
+    const newAch = {
+      id: id,
+      title: document.getElementById('achTitle').value,
+      year: document.getElementById('achYear').value,
+      icon: document.getElementById('achIcon').value,
+      desc: document.getElementById('achDesc').value
+    };
+    let achs = await getCloudData('achievements', []);
+    const existingIdx = achs.findIndex(a => a.id == id);
+    if(existingIdx >= 0) achs[existingIdx] = newAch;
+    else achs.push(newAch);
+    await setCloudData('achievements', achs);
+    document.getElementById('achModal').classList.remove('open');
+    showToast('Achievement saved successfully');
+  });
+
+  // --- Add Settings Save ---
+  document.getElementById('saveSettings')?.addEventListener('click', async () => {
+    const settings = {
+      email: document.getElementById('settingEmail').value,
+      phone: document.getElementById('settingPhone').value,
+      location: document.getElementById('settingLocation').value
+    };
+    await setCloudData('settings', settings);
+    showToast('Settings saved successfully');
   });
 }
 
