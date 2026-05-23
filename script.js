@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ─── Loader ─── */
 function initLoader() {
   const loader = document.getElementById('loader');
+  if (!loader) return;
   window.addEventListener('load', () => {
     setTimeout(() => loader.classList.add('hidden'), 1800);
   });
@@ -110,6 +111,11 @@ function initTheme() {
     const current = document.documentElement.getAttribute('data-theme');
     applyTheme(current === 'dark' ? 'light' : 'dark');
   });
+
+  document.getElementById('dashThemeToggle')?.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  });
 }
 
 function applyTheme(theme) {
@@ -119,18 +125,25 @@ function applyTheme(theme) {
   if (icon) {
     icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
   }
+  const dashIcon = document.getElementById('dashThemeIcon');
+  if (dashIcon) {
+    dashIcon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  }
 }
 
 /* ─── Navbar ─── */
 function initNavbar() {
   const navbar = document.getElementById('navbar');
+  if (!navbar) return;
   const links = document.querySelectorAll('.nav-link');
   const sections = document.querySelectorAll('section[id]');
 
   window.addEventListener('scroll', () => {
     navbar.classList.toggle('scrolled', window.scrollY > 40);
-    document.getElementById('scrollProgress').style.width =
-      (window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100) + '%';
+    const scrollProgress = document.getElementById('scrollProgress');
+    if (scrollProgress) {
+      scrollProgress.style.width = (window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100) + '%';
+    }
     document.getElementById('backToTop')?.classList.toggle('visible', window.scrollY > 400);
 
     // Active link
@@ -148,10 +161,11 @@ function initNavbar() {
 function initMobileMenu() {
   const hamburger = document.getElementById('hamburger');
   const menu = document.getElementById('mobileMenu');
+  if (!hamburger || !menu) return;
   const close = document.getElementById('mobileClose');
   const mobileLinks = document.querySelectorAll('.mobile-link');
 
-  hamburger?.addEventListener('click', () => {
+  hamburger.addEventListener('click', () => {
     hamburger.classList.toggle('open');
     menu.classList.add('open');
   });
@@ -1138,7 +1152,7 @@ function initDashboard() {
 }
 
 async function loadDashboardData() {
-  // Populate projects table
+  // Populate Projects
   const projs = await getCloudData('projects', defaultProjects);
   const pt = document.getElementById('projectsTable');
   if (pt) {
@@ -1158,6 +1172,109 @@ async function loadDashboardData() {
   
   const sp = document.getElementById('statProjects');
   if(sp) sp.textContent = projs.length;
+
+  // Populate Profile Form
+  const profile = await getCloudData('profile', null);
+  if (profile) {
+    if (document.getElementById('pfFirstName')) document.getElementById('pfFirstName').value = profile.firstName || '';
+    if (document.getElementById('pfLastName')) document.getElementById('pfLastName').value = profile.lastName || '';
+    if (document.getElementById('pfShortBio')) document.getElementById('pfShortBio').value = profile.shortBio || '';
+    if (document.getElementById('pfRoles')) document.getElementById('pfRoles').value = profile.roles || '';
+    if (document.getElementById('pfLocation')) document.getElementById('pfLocation').value = profile.location || '';
+    if (document.getElementById('pfDegree')) document.getElementById('pfDegree').value = profile.degree || '';
+    if (document.getElementById('pfUniversity')) document.getElementById('pfUniversity').value = profile.university || '';
+    if (document.getElementById('pfBio')) document.getElementById('pfBio').value = profile.bio || '';
+    if (document.getElementById('pfPhotoUrl')) document.getElementById('pfPhotoUrl').value = profile.photoUrl || '';
+  }
+
+  // Populate Skills Admin Grid
+  const skills = await getCloudData('skills', []);
+  const skGrid = document.getElementById('skillsAdminGrid');
+  if (skGrid) {
+    if (skills.length === 0) {
+      skGrid.innerHTML = '<div class="empty-state">No skills yet.</div>';
+    } else {
+      skGrid.innerHTML = skills.map(s => `
+        <div class="dash-card" style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+          <div><strong><i class="fas ${s.icon}"></i> ${s.name}</strong> (${s.category}) - ${s.percentage}%</div>
+          <button class="btn-sm text-danger" onclick="deleteSkill(${s.id})"><i class="fas fa-trash"></i></button>
+        </div>
+      `).join('');
+    }
+  }
+
+  // Populate Experience Admin Table
+  const exps = await getCloudData('experiences', []);
+  const expTable = document.getElementById('experienceTable');
+  if (expTable) {
+    if (exps.length === 0) {
+      expTable.innerHTML = '<tr><td colspan="5" class="table-empty">No experiences yet.</td></tr>';
+    } else {
+      expTable.innerHTML = exps.map(e => `
+        <tr>
+          <td>${e.role}</td>
+          <td>${e.org}</td>
+          <td>${e.date}</td>
+          <td>${e.type}</td>
+          <td><button class="btn-sm text-danger" onclick="deleteExp(${e.id})"><i class="fas fa-trash"></i></button></td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  // Populate Achievements Admin Table
+  const achs = await getCloudData('achievements', []);
+  const achTable = document.getElementById('achievementsTable');
+  if (achTable) {
+    if (achs.length === 0) {
+      achTable.innerHTML = '<tr><td colspan="5" class="table-empty">No achievements yet.</td></tr>';
+    } else {
+      achTable.innerHTML = achs.map(a => `
+        <tr>
+          <td><i class="fas ${a.icon}"></i></td>
+          <td>${a.title}</td>
+          <td>${a.year}</td>
+          <td>${a.desc.substring(0,30)}...</td>
+          <td><button class="btn-sm text-danger" onclick="deleteAch(${a.id})"><i class="fas fa-trash"></i></button></td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  // Populate Settings Form
+  const settings = await getCloudData('settings', null);
+  if (settings) {
+    if (document.getElementById('settingEmail')) document.getElementById('settingEmail').value = settings.email || '';
+    if (document.getElementById('settingPhone')) document.getElementById('settingPhone').value = settings.phone || '';
+    if (document.getElementById('settingLocation')) document.getElementById('settingLocation').value = settings.location || '';
+  }
+}
+
+window.deleteSkill = async function(id) {
+  if(confirm('Delete this skill?')) {
+    let skills = await getCloudData('skills', []);
+    skills = skills.filter(x => x.id != id);
+    await setCloudData('skills', skills);
+    await loadDashboardData();
+  }
+}
+
+window.deleteExp = async function(id) {
+  if(confirm('Delete this experience?')) {
+    let exps = await getCloudData('experiences', []);
+    exps = exps.filter(x => x.id != id);
+    await setCloudData('experiences', exps);
+    await loadDashboardData();
+  }
+}
+
+window.deleteAch = async function(id) {
+  if(confirm('Delete this achievement?')) {
+    let achs = await getCloudData('achievements', []);
+    achs = achs.filter(x => x.id != id);
+    await setCloudData('achievements', achs);
+    await loadDashboardData();
+  }
 }
 
 window.editProject = async function(id) {
