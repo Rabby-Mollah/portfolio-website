@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Portfolio of Alex Mercer — Engineering Student, Robotics & Mechatronics Specialist, Designer, and Organizer." />
+  <meta name="keywords" content="engineering, robotics, mechatronics, portfolio, designer, organizer" />
+  <title>Alex Mercer — Engineering Portfolio</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loader" class="loader">
+    <div class="loader-inner">
+      <div class="loader-logo">AM</div>
+      <div class="loader-bar"><div class="loader-progress"></div></div>
+      <span class="loader-text">Initializing...</span>
+    </div>
+  </div>
+
+  <!-- Custom Cursor -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Scroll Progress -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+
+  <!-- ============ NAVBAR ============ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="#hero" class="nav-logo">
+        <span class="logo-bracket">[</span>AM<span class="logo-bracket">]</span>
+      </a>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#about" class="nav-link">About</a></li>
+        <li><a href="#skills" class="nav-link">Skills</a></li>
+        <li><a href="#projects" class="nav-link">Projects</a></li>
+        <li><a href="#design" class="nav-link">Design</a></li>
+        <li><a href="#experience" class="nav-link">Experience</a></li>
+        <li><a href="#achievements" class="nav-link">Achievements</a></li>
+        <li><a href="#contact" class="nav-link">Contact</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
+          <i class="fas fa-sun" id="themeIcon"></i>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu Overlay -->
+  <div class="mobile-menu" id="mobileMenu">
+    <button class="mobile-close" id="mobileClose"><i class="fas fa-times"></i></button>
+    <ul class="mobile-nav-links">
+      <li><a href="#about" class="mobile-link">About</a></li>
+      <li><a href="#skills" class="mobile-link">Skills</a></li>
+      <li><a href="#projects" class="mobile-link">Projects</a></li>
+      <li><a href="#design" class="mobile-link">Design</a></li>
+      <li><a href="#experience" class="mobile-link">Experience</a></li>
+      <li><a href="#achievements" class="mobile-link">Achievements</a></li>
+      <li><a href="#contact" class="mobile-link">Contact</a></li>
+    </ul>
+  </div>
+
+  <!-- ============ HERO SECTION ============ -->
+  <section id="hero" class="hero-section">
+    <canvas id="heroCanvas" class="hero-canvas"></canvas>
+    <div class="hero-grid-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow reveal-up">
+        <span class="hero-tag"><i class="fas fa-circle pulse-dot"></i> Available for opportunities</span>
+      </div>
+      <h1 class="hero-name reveal-up">
+        <span class="hero-firstname">Alex</span>
+        <span class="hero-lastname">Mercer</span>
+      </h1>
+      <div class="hero-roles reveal-up">
+        <span class="role-prefix">I'm a </span>
+        <span class="typed-text" id="typedText"></span>
+        <span class="typed-cursor">|</span>
+      </div>
+      <p class="hero-bio reveal-up">
+        Engineering student at the intersection of <em>robotics, mechatronics, and creative design</em> —
+        building systems that are precise, functional, and beautifully engineered.
+      </p>
+      <div class="hero-cta reveal-up">
+        <a href="#projects" class="btn btn-primary">
+          <span>View Portfolio</span>
+          <i class="fas fa-arrow-right"></i>
+        </a>
+        <a href="#contact" class="btn btn-outline">
+          <span>Contact Me</span>
+        </a>
+      </div>
+      <div class="hero-socials reveal-up">
+        <a href="#" class="social-icon" aria-label="GitHub"><i class="fab fa-github"></i></a>
+        <a href="#" class="social-icon" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="social-icon" aria-label="Behance"><i class="fab fa-behance"></i></a>
+        <a href="#" class="social-icon" aria-label="Email"><i class="fas fa-envelope"></i></a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-image-frame">
+        <div class="frame-corner tl"></div>
+        <div class="frame-corner tr"></div>
+        <div class="frame-corner bl"></div>
+        <div class="frame-corner br"></div>
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&q=80" alt="Alex Mercer" class="hero-photo" id="heroPhoto" />
+        <div class="hero-badge">
+          <i class="fas fa-cog rotating-gear"></i>
+          <span>Engineer</span>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-num" data-target="15">0</span>
+          <span class="stat-label">Projects</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" data-target="8">0</span>
+          <span class="stat-label">Events Led</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num" data-target="12">0</span>
+          <span class="stat-label">Certifications</span>
+        </div>
+      </div>
+    </div>
+    <a href="#about" class="scroll-down-btn">
+      <i class="fas fa-chevron-down"></i>
+    </a>
+  </section>
+
+  <!-- ============ ABOUT SECTION ============ -->
+  <section id="about" class="section about-section">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <span class="section-tag">01 / About</span>
+        <h2 class="section-title">Who I Am</h2>
+      </div>
+      <div class="about-grid">
+        <div class="about-image-col reveal-left">
+          <div class="about-img-wrap">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80" alt="About Alex" id="aboutPhoto" />
+            <div class="about-img-decoration"></div>
+          </div>
+          <div class="about-quick-info">
+            <div class="quick-info-item">
+              <i class="fas fa-map-marker-alt"></i>
+              <span id="aboutLocation">Dhaka, Bangladesh</span>
+            </div>
+            <div class="quick-info-item">
+              <i class="fas fa-graduation-cap"></i>
+              <span id="aboutEducation">B.Sc. Mechanical Engineering</span>
+            </div>
+            <div class="quick-info-item">
+              <i class="fas fa-university"></i>
+              <span id="aboutUniversity">BUET, Class of 2025</span>
+            </div>
+          </div>
+        </div>
+        <div class="about-content-col reveal-right">
+          <p class="about-text" id="aboutBio">
+            I'm <strong>Alex Mercer</strong>, a passionate engineering student specializing in robotics,
+            mechatronics, and automation systems. My work bridges the gap between precision engineering
+            and creative design — I believe that the best systems are both technically excellent
+            and visually compelling.
+          </p>
+          <p class="about-text">
+            Beyond the lab and workshop, I'm an active organizer and leader — I've coordinated
+            national-level technical festivals, managed club operations, and mentored junior
+            engineers. I believe in building people as much as building machines.
+          </p>
+          <div class="about-highlights">
+            <div class="highlight-item">
+              <div class="highlight-icon"><i class="fas fa-robot"></i></div>
+              <div>
+                <strong>Robotics & Mechatronics</strong>
+                <p>Designing autonomous systems and intelligent machines</p>
+              </div>
+            </div>
+            <div class="highlight-item">
+              <div class="highlight-icon"><i class="fas fa-palette"></i></div>
+              <div>
+                <strong>Creative Design</strong>
+                <p>Crafting visual identities and compelling experiences</p>
+              </div>
+            </div>
+            <div class="highlight-item">
+              <div class="highlight-icon"><i class="fas fa-users"></i></div>
+              <div>
+                <strong>Leadership & Organizing</strong>
+                <p>Building communities and executing large-scale events</p>
+              </div>
+            </div>
+          </div>
+          <div class="about-actions">
+            <a href="#" class="btn btn-primary" id="downloadCV">
+              <i class="fas fa-download"></i>
+              <span>Download CV</span>
+            </a>
+            <a href="#contact" class="btn btn-ghost">Let's Talk →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SKILLS SECTION ============ -->
+  <section id="skills" class="section skills-section">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <span class="section-tag">02 / Skills</span>
+        <h2 class="section-title">What I Do</h2>
+      </div>
+      <div class="skills-tabs reveal-up">
+        <button class="skill-tab active" data-category="engineering">Engineering</button>
+        <button class="skill-tab" data-category="design">Design</button>
+        <button class="skill-tab" data-category="technical">Technical</button>
+      </div>
+      <div class="skills-grid" id="skillsGrid">
+        <!-- Populated by JS / API -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROJECTS SECTION ============ -->
+  <section id="projects" class="section projects-section">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <span class="section-tag">03 / Projects</span>
+        <h2 class="section-title">Engineering Works</h2>
+        <p class="section-subtitle">A selection of robotics, automation, and mechatronics projects.</p>
+      </div>
+      <div class="projects-filter reveal-up">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="robotics">Robotics</button>
+        <button class="filter-btn" data-filter="automation">Automation</button>
+        <button class="filter-btn" data-filter="arduino">Arduino</button>
+        <button class="filter-btn" data-filter="mechatronics">Mechatronics</button>
+      </div>
+      <div class="projects-grid" id="projectsGrid">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DESIGN PORTFOLIO SECTION ============ -->
+  <section id="design" class="section design-section">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <span class="section-tag">04 / Design</span>
+        <h2 class="section-title">Design Portfolio</h2>
+        <p class="section-subtitle">Visual work spanning branding, UI/UX, event graphics, and more.</p>
+      </div>
+      <div class="design-filter reveal-up">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="branding">Branding</button>
+        <button class="filter-btn" data-filter="poster">Posters</button>
+        <button class="filter-btn" data-filter="uiux">UI/UX</button>
+        <button class="filter-btn" data-filter="social">Social Media</button>
+        <button class="filter-btn" data-filter="event">Event</button>
+      </div>
+      <div class="design-masonry" id="designGallery">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+      <button class="lightbox-close" id="lightboxClose"><i class="fas fa-times"></i></button>
+      <button class="lightbox-prev" id="lightboxPrev"><i class="fas fa-chevron-left"></i></button>
+      <button class="lightbox-next" id="lightboxNext"><i class="fas fa-chevron-right"></i></button>
+      <div class="lightbox-content">
+        <img id="lightboxImg" src="" alt="" />
+        <div class="lightbox-info">
+          <h3 id="lightboxTitle"></h3>
+          <p id="lightboxDesc"></p>
+          <span class="lightbox-category" id="lightboxCategory"></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EXPERIENCE / ORGANIZING SECTION ============ -->
+  <section id="experience" class="section experience-section">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <span class="section-tag">05 / Experience</span>
+        <h2 class="section-title">Journey & Leadership</h2>
+      </div>
+      <div class="experience-tabs reveal-up">
+        <button class="exp-tab active" data-exp="work">Work & Internships</button>
+        <button class="exp-tab" data-exp="clubs">Clubs & Organizations</button>
+        <button class="exp-tab" data-exp="events">Events Organized</button>
+      </div>
+      <div class="timeline-container" id="experienceTimeline">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ACHIEVEMENTS SECTION ============ -->
+  <section id="achievements" class="section achievements-section">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <span class="section-tag">06 / Achievements</span>
+        <h2 class="section-title">Milestones & Awards</h2>
+      </div>
+      <!-- Counter Banner -->
+      <div class="counter-banner reveal-up">
+        <div class="counter-item">
+          <span class="counter" data-target="5">0</span>
+          <span>Awards Won</span>
+        </div>
+        <div class="counter-item">
+          <span class="counter" data-target="12">0</span>
+          <span>Certifications</span>
+        </div>
+        <div class="counter-item">
+          <span class="counter" data-target="3">0</span>
+          <span>Scholarships</span>
+        </div>
+        <div class="counter-item">
+          <span class="counter" data-target="500">0</span>
+          <span>Students Impacted</span>
+        </div>
+      </div>
+      <div class="achievements-grid" id="achievementsGrid">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TESTIMONIALS SECTION ============ -->
+  <section id="testimonials" class="section testimonials-section">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <span class="section-tag">07 / Testimonials</span>
+        <h2 class="section-title">What Others Say</h2>
+      </div>
+      <div class="testimonials-slider reveal-up">
+        <div class="slider-track" id="testimonialTrack">
+          <!-- Populated dynamically -->
+        </div>
+        <div class="slider-controls">
+          <button class="slider-btn" id="prevTestimonial"><i class="fas fa-arrow-left"></i></button>
+          <div class="slider-dots" id="sliderDots"></div>
+          <button class="slider-btn" id="nextTestimonial"><i class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT SECTION ============ -->
+  <section id="contact" class="section contact-section">
+    <div class="container">
+      <div class="section-header reveal-up">
+        <span class="section-tag">08 / Contact</span>
+        <h2 class="section-title">Let's Build Together</h2>
+        <p class="section-subtitle">Whether it's a collaboration, opportunity, or just a conversation — I'm all ears.</p>
+      </div>
+      <div class="contact-grid">
+        <div class="contact-info reveal-left">
+          <div class="contact-info-item" id="contactEmail">
+            <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+            <div>
+              <strong>Email</strong>
+              <a href="mailto:alex@example.com">alex@example.com</a>
+            </div>
+          </div>
+          <div class="contact-info-item" id="contactPhone">
+            <div class="contact-icon"><i class="fas fa-phone"></i></div>
+            <div>
+              <strong>Phone</strong>
+              <a href="tel:+8801700000000">+880 1700-000000</a>
+            </div>
+          </div>
+          <div class="contact-info-item">
+            <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div>
+              <strong>Location</strong>
+              <span>Dhaka, Bangladesh</span>
+            </div>
+          </div>
+          <div class="contact-socials">
+            <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="social-link"><i class="fab fa-behance"></i></a>
+          </div>
+        </div>
+        <div class="contact-form-col reveal-right">
+          <form class="contact-form" id="contactForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="contactName">Full Name *</label>
+                <input type="text" id="contactName" name="name" placeholder="John Doe" required />
+                <span class="form-error" id="nameError"></span>
+              </div>
+              <div class="form-group">
+                <label for="contactEmailInput">Email *</label>
+                <input type="email" id="contactEmailInput" name="email" placeholder="john@example.com" required />
+                <span class="form-error" id="emailError"></span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="contactSubject">Subject</label>
+              <input type="text" id="contactSubject" name="subject" placeholder="Project Collaboration" />
+            </div>
+            <div class="form-group">
+              <label for="contactMessage">Message *</label>
+              <textarea id="contactMessage" name="message" rows="6" placeholder="Tell me about your project or idea..." required></textarea>
+              <span class="form-error" id="messageError"></span>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full" id="submitBtn">
+              <span>Send Message</span>
+              <i class="fas fa-paper-plane"></i>
+            </button>
+            <div class="form-success" id="formSuccess">
+              <i class="fas fa-check-circle"></i>
+              <span>Message sent successfully! I'll get back to you soon.</span>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-logo"><span class="logo-bracket">[</span>AM<span class="logo-bracket">]</span></div>
+          <p>Engineering Innovation &<br/>Creative Leadership</p>
+        </div>
+        <div class="footer-nav">
+          <strong>Navigation</strong>
+          <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#design">Design</a></li>
+            <li><a href="#experience">Experience</a></li>
+          </ul>
+        </div>
+        <div class="footer-nav">
+          <strong>More</strong>
+          <ul>
+            <li><a href="#achievements">Achievements</a></li>
+            <li><a href="#testimonials">Testimonials</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="/admin-dashboard/dashboard.html">Admin</a></li>
+          </ul>
+        </div>
+        <div class="footer-contact">
+          <strong>Connect</strong>
+          <div class="footer-socials">
+            <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" aria-label="Behance"><i class="fab fa-behance"></i></a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; <span id="currentYear"></span> Alex Mercer. Engineered with passion.</p>
+        <p class="footer-api-status">
+          <span class="status-dot" id="apiStatus"></span>
+          <span id="apiStatusText">Checking API...</span>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" id="backToTop" aria-label="Back to top">
+    <i class="fas fa-arrow-up"></i>
+  </button>
+
+  <script src="script.js"></script>
+</body>
+</html>
