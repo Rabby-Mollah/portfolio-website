@@ -14,6 +14,7 @@ const firebaseConfig = {
   measurementId: "G-BQVHRYJVPN"
 };
 
+const API_BASE = '';
 let db = null;
 try {
   if (typeof firebase !== 'undefined') {
@@ -264,26 +265,30 @@ function initHeroCanvas() {
 }
 
 /* ─── Typing Effect ─── */
+let typingTimeout = null;
 function initTypingEffect() {
   const el = document.getElementById('typedText');
   if (!el) return;
   const roles = window.profileRoles || ['Robotics Engineer', 'Mechatronics Designer', 'Creative Organizer', 'CAD Designer', 'Embedded Systems Dev', 'Event Manager'];
   let roleIdx = 0, charIdx = 0, deleting = false;
 
+  // Clear any previous typing loop
+  if (typingTimeout) clearTimeout(typingTimeout);
+
   function type() {
     const current = roles[roleIdx];
     el.textContent = current.substring(0, charIdx);
 
     if (!deleting && charIdx < current.length) {
-      charIdx++; setTimeout(type, 90);
+      charIdx++; typingTimeout = setTimeout(type, 90);
     } else if (!deleting && charIdx === current.length) {
-      setTimeout(() => { deleting = true; type(); }, 1800);
+      typingTimeout = setTimeout(() => { deleting = true; type(); }, 1800);
     } else if (deleting && charIdx > 0) {
-      charIdx--; setTimeout(type, 45);
+      charIdx--; typingTimeout = setTimeout(type, 45);
     } else {
       deleting = false;
       roleIdx = (roleIdx + 1) % roles.length;
-      setTimeout(type, 300);
+      typingTimeout = setTimeout(type, 300);
     }
   }
   type();
@@ -395,22 +400,73 @@ function initSkills() {
   fetchAndRenderSkills();
 }
 
+/* ─── Load Social Links on Portfolio ─── */
+async function loadSocialLinks() {
+  const settings = await getCloudData('settings', null);
+  if (!settings) return;
+  
+  // Update hero social links
+  const heroSocials = document.querySelector('.hero-socials');
+  if (heroSocials) {
+    const links = heroSocials.querySelectorAll('.social-icon');
+    links.forEach(link => {
+      const icon = link.querySelector('i');
+      if (!icon) return;
+      if (icon.classList.contains('fa-github') && settings.github) link.href = settings.github;
+      if (icon.classList.contains('fa-linkedin-in') && settings.linkedin) link.href = settings.linkedin;
+      if (icon.classList.contains('fa-instagram') && settings.instagram) link.href = settings.instagram;
+      if (icon.classList.contains('fa-behance') && settings.behance) link.href = settings.behance;
+      if (icon.classList.contains('fa-envelope') && settings.email) link.href = 'mailto:' + settings.email;
+    });
+  }
+  
+  // Update contact section social links
+  const contactSocials = document.querySelector('.contact-socials');
+  if (contactSocials) {
+    const links = contactSocials.querySelectorAll('.social-link');
+    links.forEach(link => {
+      const icon = link.querySelector('i');
+      if (!icon) return;
+      if (icon.classList.contains('fa-github') && settings.github) link.href = settings.github;
+      if (icon.classList.contains('fa-linkedin-in') && settings.linkedin) link.href = settings.linkedin;
+      if (icon.classList.contains('fa-instagram') && settings.instagram) link.href = settings.instagram;
+      if (icon.classList.contains('fa-behance') && settings.behance) link.href = settings.behance;
+    });
+  }
+  
+  // Update footer social links
+  const footerSocials = document.querySelector('.footer-socials');
+  if (footerSocials) {
+    const links = footerSocials.querySelectorAll('a');
+    links.forEach(link => {
+      const icon = link.querySelector('i');
+      if (!icon) return;
+      if (icon.classList.contains('fa-github') && settings.github) link.href = settings.github;
+      if (icon.classList.contains('fa-linkedin-in') && settings.linkedin) link.href = settings.linkedin;
+      if (icon.classList.contains('fa-instagram') && settings.instagram) link.href = settings.instagram;
+      if (icon.classList.contains('fa-behance') && settings.behance) link.href = settings.behance;
+    });
+  }
+}
+
 async function fetchAndRenderProfile() {
   const profile = await getCloudData('profile', null);
   if (!profile) return;
   
-  if (document.getElementById('heroFirstName')) document.getElementById('heroFirstName').textContent = profile.firstName;
-  if (document.getElementById('heroLastName')) document.getElementById('heroLastName').textContent = profile.lastName;
-  if (document.getElementById('heroBioText')) document.getElementById('heroBioText').innerHTML = profile.shortBio;
-  if (document.getElementById('aboutBio')) document.getElementById('aboutBio').innerHTML = profile.bio;
-  if (document.getElementById('aboutLocation')) document.getElementById('aboutLocation').textContent = profile.location;
-  if (document.getElementById('aboutEducation')) document.getElementById('aboutEducation').textContent = profile.degree;
-  if (document.getElementById('aboutUniversity')) document.getElementById('aboutUniversity').textContent = profile.university;
-  if (document.getElementById('heroPhoto')) document.getElementById('heroPhoto').src = profile.photoUrl;
-  if (document.getElementById('aboutPhoto')) document.getElementById('aboutPhoto').src = profile.photoUrl;
+  if (profile.firstName && document.getElementById('heroFirstName')) document.getElementById('heroFirstName').textContent = profile.firstName;
+  if (profile.lastName && document.getElementById('heroLastName')) document.getElementById('heroLastName').textContent = profile.lastName;
+  if (profile.shortBio && document.getElementById('heroBioText')) document.getElementById('heroBioText').innerHTML = profile.shortBio;
+  if (profile.bio && document.getElementById('aboutBio')) document.getElementById('aboutBio').innerHTML = profile.bio;
+  if (profile.location && document.getElementById('aboutLocation')) document.getElementById('aboutLocation').textContent = profile.location;
+  if (profile.degree && document.getElementById('aboutEducation')) document.getElementById('aboutEducation').textContent = profile.degree;
+  if (profile.university && document.getElementById('aboutUniversity')) document.getElementById('aboutUniversity').textContent = profile.university;
+  if (profile.photoUrl && document.getElementById('heroPhoto')) document.getElementById('heroPhoto').src = profile.photoUrl;
+  if (profile.photoUrl && document.getElementById('aboutPhoto')) document.getElementById('aboutPhoto').src = profile.photoUrl;
   
   if (profile.roles) {
-    window.profileRoles = profile.roles.split(',').map(s=>s.trim());
+    window.profileRoles = profile.roles.split(',').map(s=>s.trim()).filter(s=>s);
+    // Re-initialize typing effect with updated roles
+    initTypingEffect();
   }
 }
 
@@ -588,7 +644,7 @@ async function fetchAndRenderDesigns() {
   const localDesigns = await getCloudData('designs', null);
   if (localDesigns && localDesigns.length > 0) activeDesigns = localDesigns;
 
-  renderDesigns(defaultDesigns);
+  renderDesigns(activeDesigns);
 }
 
 function renderDesigns(designs) {
@@ -702,10 +758,17 @@ function initExperience() {
 async function fetchAndRenderExperience() {
   const localExp = await getCloudData('experiences', null);
   if (localExp && localExp.length > 0) {
+    // Replace defaults with cloud data, grouping by type
+    const cloudGrouped = { work: [], clubs: [], events: [] };
     localExp.forEach(e => {
       const cat = e.type || 'work';
-      if (!defaultExperience[cat]) defaultExperience[cat] = [];
-      defaultExperience[cat].push(e);
+      if (!cloudGrouped[cat]) cloudGrouped[cat] = [];
+      cloudGrouped[cat].push(e);
+    });
+    Object.keys(cloudGrouped).forEach(cat => {
+      if (cloudGrouped[cat].length > 0) {
+        defaultExperience[cat] = cloudGrouped[cat];
+      }
     });
   }
 
@@ -884,22 +947,25 @@ function initContactForm() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Sending...</span>';
     btn.disabled = true;
 
-    const data = {
-      name: document.getElementById('contactName')?.value,
-      email: document.getElementById('contactEmailInput')?.value,
-      subject: document.getElementById('contactSubject')?.value,
-      message: document.getElementById('contactMessage')?.value,
+    const msgData = {
+      id: String(Date.now()),
+      name: document.getElementById('contactName')?.value || '',
+      email: document.getElementById('contactEmailInput')?.value || '',
+      subject: document.getElementById('contactSubject')?.value || '',
+      message: document.getElementById('contactMessage')?.value || '',
+      date: new Date().toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' })
     };
 
     try {
-      const res = await fetch(`${API_BASE}/contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (!res.ok) throw new Error();
+      // Save message to Firebase
+      let msgs = await getCloudData('messages', []);
+      msgs.push(msgData);
+      await setCloudData('messages', msgs);
       form.reset();
       document.getElementById('formSuccess')?.classList.add('visible');
+      setTimeout(() => {
+        document.getElementById('formSuccess')?.classList.remove('visible');
+      }, 5000);
     } catch (_) {
       // Still show success for demo
       form.reset();
@@ -948,11 +1014,17 @@ async function loadContactInfo() {
     const phoneEl = document.querySelector('#contactPhone a');
     if (phoneEl) { phoneEl.textContent = data.phone; phoneEl.href = 'tel:' + data.phone.replace(/\s/g, ''); }
   }
+  if (data.location) {
+    const locEl = document.querySelector('#contact .contact-info-item:nth-child(3) span');
+    if (locEl) locEl.textContent = data.location;
+  }
   if (data.cvUrl) {
     const cvBtn = document.getElementById('downloadCV');
     if (cvBtn) cvBtn.href = data.cvUrl;
   }
-
+  
+  // Load social links on portfolio
+  loadSocialLinks();
 }
 
 /* ─── Back to Top ─── */
@@ -999,6 +1071,29 @@ function initDashboard() {
     loadDashboardData();
   }
 
+  // Password toggle
+  document.getElementById('pwdToggle')?.addEventListener('click', () => {
+    const pwdInput = document.getElementById('loginPassword');
+    const icon = document.querySelector('#pwdToggle i');
+    if (pwdInput.type === 'password') {
+      pwdInput.type = 'text';
+      icon.className = 'fas fa-eye-slash';
+    } else {
+      pwdInput.type = 'password';
+      icon.className = 'fas fa-eye';
+    }
+  });
+
+  // Sidebar collapse
+  document.getElementById('sidebarCollapse')?.addEventListener('click', () => {
+    document.getElementById('sidebar')?.classList.toggle('collapsed');
+  });
+
+  // Mobile topbar menu toggle
+  document.getElementById('topbarMenu')?.addEventListener('click', () => {
+    document.getElementById('sidebar')?.classList.toggle('mobile-open');
+  });
+
   // Login handler
   document.getElementById('loginForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -1042,6 +1137,76 @@ function initDashboard() {
     });
   });
 
+  // Quick Actions from overview page
+  document.querySelectorAll('.quick-action-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = btn.dataset.page;
+      if (page) {
+        // Navigate to the page
+        navItems.forEach(n => n.classList.remove('active'));
+        const target = document.querySelector(`.nav-item[data-page="${page}"]`);
+        if (target) target.classList.add('active');
+        document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+        document.getElementById('page-' + page)?.classList.remove('hidden');
+        document.getElementById('topbarTitle').textContent = target?.querySelector('span')?.textContent || page;
+        
+        // Trigger action if specified
+        const action = btn.dataset.action;
+        if (action === 'add') {
+          setTimeout(() => {
+            const addBtn = document.querySelector('#page-' + page + ' .btn-add');
+            if (addBtn) addBtn.click();
+          }, 200);
+        }
+      }
+    });
+  });
+
+  // Link buttons (View All etc.)
+  document.querySelectorAll('.link-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = btn.dataset.page;
+      if (page) {
+        navItems.forEach(n => n.classList.remove('active'));
+        const target = document.querySelector(`.nav-item[data-page="${page}"]`);
+        if (target) target.classList.add('active');
+        document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+        document.getElementById('page-' + page)?.classList.remove('hidden');
+        document.getElementById('topbarTitle').textContent = target?.querySelector('span')?.textContent || page;
+      }
+    });
+  });
+
+  // Experience admin tab filter
+  document.querySelectorAll('.exp-tab-admin').forEach(tab => {
+    tab.addEventListener('click', async () => {
+      document.querySelectorAll('.exp-tab-admin').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const type = tab.dataset.type;
+      const exps = await getCloudData('experiences', []);
+      const filtered = type === 'all' ? exps : exps.filter(e => e.type === type);
+      const expTable = document.getElementById('experienceTable');
+      if (expTable) {
+        if (filtered.length === 0) {
+          expTable.innerHTML = '<tr><td colspan="5" class="table-empty">No experiences in this category.</td></tr>';
+        } else {
+          expTable.innerHTML = filtered.map(e => `
+            <tr>
+              <td>${e.role}</td>
+              <td>${e.org}</td>
+              <td>${e.date}</td>
+              <td>${e.type}</td>
+              <td>
+                <button class="btn-sm" onclick="editExp('${e.id}')"><i class="fas fa-edit"></i></button>
+                <button class="btn-sm text-danger" onclick="deleteExp('${e.id}')"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      }
+    });
+  });
+
   // --- Add Projects ---
   document.getElementById('addProjectBtn')?.addEventListener('click', () => {
     document.getElementById('projectId').value = '';
@@ -1049,6 +1214,10 @@ function initDashboard() {
     document.getElementById('projectDescription').value = '';
     document.getElementById('projectCategory').value = '';
     document.getElementById('projectTech').value = '';
+    document.getElementById('projectGithub').value = '';
+    document.getElementById('projectDemo').value = '';
+    document.getElementById('projectImage').value = '';
+    document.getElementById('projectModalTitle').textContent = 'Add Project';
     document.getElementById('projectModal').classList.add('open');
   });
 
@@ -1081,26 +1250,94 @@ function initDashboard() {
     document.getElementById('achModal').classList.add('open');
   });
 
+  // --- Add Design ---
+  document.getElementById('addDesignBtn')?.addEventListener('click', () => {
+    document.getElementById('designId').value = '';
+    document.getElementById('designTitle').value = '';
+    document.getElementById('designDescription').value = '';
+    document.getElementById('designCategory').value = 'branding';
+    document.getElementById('designImage').value = '';
+    document.getElementById('designModalTitle').textContent = 'Upload Design';
+    document.getElementById('designModal').classList.add('open');
+  });
+
+  // --- Add Testimonial ---
+  document.getElementById('addTestBtn')?.addEventListener('click', () => {
+    document.getElementById('testId').value = '';
+    document.getElementById('testQuote').value = '';
+    document.getElementById('testName').value = '';
+    document.getElementById('testPosition').value = '';
+    document.getElementById('testAvatar').value = '';
+    document.getElementById('testModal').classList.add('open');
+  });
+
   document.getElementById('saveProject')?.addEventListener('click', async () => {
-    const id = document.getElementById('projectId').value || Date.now();
+    const title = document.getElementById('projectTitle').value.trim();
+    if (!title) { showToast('Project title is required'); return; }
+    const id = document.getElementById('projectId').value || String(Date.now());
     const newProj = {
       id: id,
-      title: document.getElementById('projectTitle').value,
+      title: title,
       description: document.getElementById('projectDescription').value,
-      tags: [document.getElementById('projectCategory').value],
-      technologies: document.getElementById('projectTech').value.split(',').map(s=>s.trim()),
+      tags: [document.getElementById('projectCategory').value].filter(s=>s),
+      technologies: document.getElementById('projectTech').value.split(',').map(s=>s.trim()).filter(s=>s),
       github: document.getElementById('projectGithub').value,
       demo: document.getElementById('projectDemo').value,
       image: document.getElementById('projectImage').value || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600'
     };
-    let projs = await getCloudData('projects', defaultProjects);
-    const existingIdx = projs.findIndex(p => p.id == id);
+    let projs = await getCloudData('projects', []);
+    const existingIdx = projs.findIndex(p => String(p.id) === String(id));
     if(existingIdx >= 0) projs[existingIdx] = newProj;
     else projs.push(newProj);
     await setCloudData('projects', projs);
     document.getElementById('projectModal').classList.remove('open');
     await loadDashboardData();
     showToast('Project saved successfully');
+  });
+
+  // --- Save Design ---
+  document.getElementById('saveDesign')?.addEventListener('click', async () => {
+    const title = document.getElementById('designTitle').value.trim();
+    if (!title) { showToast('Design title is required'); return; }
+    const id = document.getElementById('designId').value || String(Date.now());
+    const newDesign = {
+      id: id,
+      title: title,
+      description: document.getElementById('designDescription').value,
+      category: document.getElementById('designCategory').value,
+      image: document.getElementById('designImage').value || 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&q=80'
+    };
+    let designs = await getCloudData('designs', []);
+    const existingIdx = designs.findIndex(d => String(d.id) === String(id));
+    if(existingIdx >= 0) designs[existingIdx] = newDesign;
+    else designs.push(newDesign);
+    await setCloudData('designs', designs);
+    document.getElementById('designModal').classList.remove('open');
+    await loadDashboardData();
+    showToast('Design saved successfully');
+  });
+
+  // --- Save Testimonial ---
+  document.getElementById('saveTest')?.addEventListener('click', async () => {
+    const name = document.getElementById('testName').value.trim();
+    const quote = document.getElementById('testQuote').value.trim();
+    if (!name || !quote) { showToast('Name and quote are required'); return; }
+    const id = document.getElementById('testId').value || String(Date.now());
+    const newTest = {
+      id: id,
+      quote: quote,
+      name: name,
+      position: document.getElementById('testPosition').value,
+      avatar: document.getElementById('testAvatar').value || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80'
+    };
+    let tests = await getCloudData('testimonials', []);
+    const existingIdx = tests.findIndex(t => String(t.id) === String(id));
+    if(existingIdx >= 0) tests[existingIdx] = newTest;
+    else tests.push(newTest);
+    await setCloudData('testimonials', tests);
+    document.getElementById('testModal').classList.remove('open');
+    await loadDashboardData();
+    showToast('Testimonial saved successfully');
   });
 
   // --- Add Profile Save ---
@@ -1184,7 +1421,11 @@ function initDashboard() {
     const settings = {
       email: document.getElementById('settingEmail').value,
       phone: document.getElementById('settingPhone').value,
-      location: document.getElementById('settingLocation').value
+      location: document.getElementById('settingLocation').value,
+      github: document.getElementById('socialGithub').value,
+      linkedin: document.getElementById('socialLinkedin').value,
+      instagram: document.getElementById('socialInstagram').value,
+      behance: document.getElementById('socialBehance').value
     };
     await setCloudData('settings', settings);
     showToast('Settings saved successfully');
@@ -1193,25 +1434,53 @@ function initDashboard() {
 
 async function loadDashboardData() {
   // Populate Projects
-  const projs = await getCloudData('projects', defaultProjects);
+  const projs = await getCloudData('projects', []);
   const pt = document.getElementById('projectsTable');
   if (pt) {
-    pt.innerHTML = projs.map(p => `
-      <tr>
-        <td><img src="${p.image}" width="50" style="border-radius:4px" /></td>
-        <td>${p.title}</td>
-        <td>${(p.tags||[]).join(', ')}</td>
-        <td>${p.github ? '<a href="'+p.github+'" target="_blank">Link</a>' : '-'}</td>
-        <td>
-          <button class="btn-sm" onclick="editProject(${p.id})"><i class="fas fa-edit"></i></button>
-          <button class="btn-sm text-danger" onclick="deleteProject(${p.id})"><i class="fas fa-trash"></i></button>
-        </td>
-      </tr>
-    `).join('');
+    if (projs.length === 0) {
+      pt.innerHTML = '<tr><td colspan="5" class="table-empty">No projects yet. Add your first project!</td></tr>';
+    } else {
+      pt.innerHTML = projs.map(p => `
+        <tr>
+          <td><img src="${p.image || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600'}" width="50" style="border-radius:4px" /></td>
+          <td>${p.title}</td>
+          <td>${(p.tags||[]).join(', ')}</td>
+          <td>${p.github ? '<a href="'+p.github+'" target="_blank">Link</a>' : '-'}</td>
+          <td>
+            <button class="btn-sm" onclick="editProject('${p.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn-sm text-danger" onclick="deleteProject('${p.id}')"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
   }
   
   const sp = document.getElementById('statProjects');
   if(sp) sp.textContent = projs.length;
+
+  // Populate Designs Admin Grid
+  const designs = await getCloudData('designs', []);
+  const dGrid = document.getElementById('designsAdminGrid');
+  if (dGrid) {
+    if (designs.length === 0) {
+      dGrid.innerHTML = '<div class="empty-state"><i class="fas fa-images"></i><span>No designs yet. Upload your first design!</span></div>';
+    } else {
+      dGrid.innerHTML = designs.map(d => `
+        <div class="dash-card" style="padding:15px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <img src="${d.image}" width="60" height="40" style="border-radius:4px; object-fit:cover" />
+            <div><strong>${d.title}</strong><br><small style="opacity:0.6">${d.category}</small></div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-sm" onclick="editDesign('${d.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn-sm text-danger" onclick="deleteDesign('${d.id}')"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+  const sd = document.getElementById('statDesigns');
+  if(sd) sd.textContent = designs.length;
 
   // Populate Profile Form
   const profile = await getCloudData('profile', null);
@@ -1232,12 +1501,12 @@ async function loadDashboardData() {
   const skGrid = document.getElementById('skillsAdminGrid');
   if (skGrid) {
     if (skills.length === 0) {
-      skGrid.innerHTML = '<div class="empty-state">No skills yet.</div>';
+      skGrid.innerHTML = '<div class="empty-state"><i class="fas fa-chart-bar"></i><span>No skills yet. Add your first skill!</span></div>';
     } else {
       skGrid.innerHTML = skills.map(s => `
         <div class="dash-card" style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
           <div><strong><i class="fas ${s.icon}"></i> ${s.name}</strong> (${s.category}) - ${s.percentage}%</div>
-          <button class="btn-sm text-danger" onclick="deleteSkill(${s.id})"><i class="fas fa-trash"></i></button>
+          <button class="btn-sm text-danger" onclick="deleteSkill('${s.id}')"><i class="fas fa-trash"></i></button>
         </div>
       `).join('');
     }
@@ -1256,7 +1525,10 @@ async function loadDashboardData() {
           <td>${e.org}</td>
           <td>${e.date}</td>
           <td>${e.type}</td>
-          <td><button class="btn-sm text-danger" onclick="deleteExp(${e.id})"><i class="fas fa-trash"></i></button></td>
+          <td>
+            <button class="btn-sm" onclick="editExp('${e.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn-sm text-danger" onclick="deleteExp('${e.id}')"><i class="fas fa-trash"></i></button>
+          </td>
         </tr>
       `).join('');
     }
@@ -1274,9 +1546,83 @@ async function loadDashboardData() {
           <td><i class="fas ${a.icon}"></i></td>
           <td>${a.title}</td>
           <td>${a.year}</td>
-          <td>${a.desc.substring(0,30)}...</td>
-          <td><button class="btn-sm text-danger" onclick="deleteAch(${a.id})"><i class="fas fa-trash"></i></button></td>
+          <td>${(a.desc||'').substring(0,30)}...</td>
+          <td>
+            <button class="btn-sm" onclick="editAch('${a.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn-sm text-danger" onclick="deleteAch('${a.id}')"><i class="fas fa-trash"></i></button>
+          </td>
         </tr>
+      `).join('');
+    }
+  }
+  const sa = document.getElementById('statAchievements');
+  if(sa) sa.textContent = achs.length;
+
+  // Populate Testimonials Admin Grid
+  const tests = await getCloudData('testimonials', []);
+  const testGrid = document.getElementById('testimonialsAdminGrid');
+  if (testGrid) {
+    if (tests.length === 0) {
+      testGrid.innerHTML = '<div class="empty-state"><i class="fas fa-quote-right"></i><span>No testimonials yet. Add your first testimonial!</span></div>';
+    } else {
+      testGrid.innerHTML = tests.map(t => `
+        <div class="dash-card" style="padding:15px;">
+          <div style="display:flex; justify-content:space-between; align-items:start; gap:12px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="${t.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80'}" width="40" height="40" style="border-radius:50%; object-fit:cover" />
+              <div><strong>${t.name}</strong><br><small style="opacity:0.6">${t.position || ''}</small></div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="btn-sm" onclick="editTestimonial('${t.id}')"><i class="fas fa-edit"></i></button>
+              <button class="btn-sm text-danger" onclick="deleteTestimonial('${t.id}')"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+          <p style="margin-top:8px; opacity:0.8; font-size:0.9rem;">&ldquo;${(t.quote||'').substring(0,80)}...&rdquo;</p>
+        </div>
+      `).join('');
+    }
+  }
+
+  // Populate Messages count
+  const msgs = await getCloudData('messages', []);
+  const sm = document.getElementById('statMessages');
+  if(sm) sm.textContent = msgs.length || 0;
+  const msgBadge = document.getElementById('msgBadge');
+  if(msgBadge) msgBadge.textContent = msgs.length || 0;
+
+  // Populate Messages table
+  const msgTable = document.getElementById('messagesTable');
+  if (msgTable) {
+    if (!msgs || msgs.length === 0) {
+      msgTable.innerHTML = '<tr><td colspan="5" class="table-empty">No messages yet.</td></tr>';
+    } else {
+      msgTable.innerHTML = msgs.map(m => `
+        <tr>
+          <td>${m.name || '-'}</td>
+          <td>${m.email || '-'}</td>
+          <td>${m.subject || '-'}</td>
+          <td>${m.date || '-'}</td>
+          <td>
+            <button class="btn-sm" onclick="viewMessage('${m.id}')"><i class="fas fa-eye"></i></button>
+            <button class="btn-sm text-danger" onclick="deleteMessage('${m.id}')"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+  }
+
+  // Populate Messages Preview on Overview
+  const msgPreview = document.getElementById('messagesPreview');
+  if (msgPreview) {
+    if (!msgs || msgs.length === 0) {
+      msgPreview.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><span>No messages yet</span></div>';
+    } else {
+      const recent = msgs.slice(-3).reverse();
+      msgPreview.innerHTML = recent.map(m => `
+        <div style="padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+          <strong>${m.name || 'Anonymous'}</strong> <small style="opacity:0.5">${m.date || ''}</small>
+          <p style="opacity:0.7; font-size:0.85rem; margin:4px 0 0;">${(m.subject || m.message || '').substring(0,50)}...</p>
+        </div>
       `).join('');
     }
   }
@@ -1287,39 +1633,72 @@ async function loadDashboardData() {
     if (document.getElementById('settingEmail')) document.getElementById('settingEmail').value = settings.email || '';
     if (document.getElementById('settingPhone')) document.getElementById('settingPhone').value = settings.phone || '';
     if (document.getElementById('settingLocation')) document.getElementById('settingLocation').value = settings.location || '';
+    if (document.getElementById('socialGithub')) document.getElementById('socialGithub').value = settings.github || '';
+    if (document.getElementById('socialLinkedin')) document.getElementById('socialLinkedin').value = settings.linkedin || '';
+    if (document.getElementById('socialInstagram')) document.getElementById('socialInstagram').value = settings.instagram || '';
+    if (document.getElementById('socialBehance')) document.getElementById('socialBehance').value = settings.behance || '';
   }
 }
 
 window.deleteSkill = async function(id) {
   if(confirm('Delete this skill?')) {
     let skills = await getCloudData('skills', []);
-    skills = skills.filter(x => x.id != id);
+    skills = skills.filter(x => String(x.id) !== String(id));
     await setCloudData('skills', skills);
     await loadDashboardData();
+    showToast('Skill deleted');
   }
 }
 
 window.deleteExp = async function(id) {
   if(confirm('Delete this experience?')) {
     let exps = await getCloudData('experiences', []);
-    exps = exps.filter(x => x.id != id);
+    exps = exps.filter(x => String(x.id) !== String(id));
     await setCloudData('experiences', exps);
     await loadDashboardData();
+    showToast('Experience deleted');
   }
+}
+
+window.editExp = async function(id) {
+  const exps = await getCloudData('experiences', []);
+  const e = exps.find(x => String(x.id) === String(id));
+  if(!e) return;
+  document.getElementById('expId').value = e.id;
+  document.getElementById('expRole').value = e.role || '';
+  document.getElementById('expOrg').value = e.org || '';
+  document.getElementById('expDate').value = e.date || '';
+  document.getElementById('expType').value = e.type || 'work';
+  document.getElementById('expIcon').value = e.icon || '';
+  document.getElementById('expDesc').value = e.desc || '';
+  document.getElementById('expModal').classList.add('open');
 }
 
 window.deleteAch = async function(id) {
   if(confirm('Delete this achievement?')) {
     let achs = await getCloudData('achievements', []);
-    achs = achs.filter(x => x.id != id);
+    achs = achs.filter(x => String(x.id) !== String(id));
     await setCloudData('achievements', achs);
     await loadDashboardData();
+    showToast('Achievement deleted');
   }
 }
 
+window.editAch = async function(id) {
+  const achs = await getCloudData('achievements', []);
+  const a = achs.find(x => String(x.id) === String(id));
+  if(!a) return;
+  document.getElementById('achId').value = a.id;
+  document.getElementById('achTitle').value = a.title || '';
+  document.getElementById('achYear').value = a.year || '';
+  document.getElementById('achIcon').value = a.icon || '';
+  document.getElementById('achDesc').value = a.desc || '';
+  document.getElementById('achModal').classList.add('open');
+}
+
 window.editProject = async function(id) {
-  const projs = await getCloudData('projects', defaultProjects);
-  const p = projs.find(x => x.id == id);
+  const projs = await getCloudData('projects', []);
+  const p = projs.find(x => String(x.id) === String(id));
   if(!p) return;
   document.getElementById('projectId').value = p.id;
   document.getElementById('projectTitle').value = p.title;
@@ -1329,15 +1708,90 @@ window.editProject = async function(id) {
   document.getElementById('projectGithub').value = p.github || '';
   document.getElementById('projectDemo').value = p.demo || '';
   document.getElementById('projectImage').value = p.image || '';
+  document.getElementById('projectModalTitle').textContent = 'Edit Project';
   document.getElementById('projectModal').classList.add('open');
 }
 
 window.deleteProject = async function(id) {
   if(confirm('Delete this project?')) {
-    let projs = await getCloudData('projects', defaultProjects);
-    projs = projs.filter(x => x.id != id);
+    let projs = await getCloudData('projects', []);
+    projs = projs.filter(x => String(x.id) !== String(id));
     await setCloudData('projects', projs);
     await loadDashboardData();
+    showToast('Project deleted');
+  }
+}
+
+window.editDesign = async function(id) {
+  const designs = await getCloudData('designs', []);
+  const d = designs.find(x => String(x.id) === String(id));
+  if(!d) return;
+  document.getElementById('designId').value = d.id;
+  document.getElementById('designTitle').value = d.title || '';
+  document.getElementById('designDescription').value = d.description || '';
+  document.getElementById('designCategory').value = d.category || 'branding';
+  document.getElementById('designImage').value = d.image || '';
+  document.getElementById('designModalTitle').textContent = 'Edit Design';
+  document.getElementById('designModal').classList.add('open');
+}
+
+window.deleteDesign = async function(id) {
+  if(confirm('Delete this design?')) {
+    let designs = await getCloudData('designs', []);
+    designs = designs.filter(x => String(x.id) !== String(id));
+    await setCloudData('designs', designs);
+    await loadDashboardData();
+    showToast('Design deleted');
+  }
+}
+
+window.editTestimonial = async function(id) {
+  const tests = await getCloudData('testimonials', []);
+  const t = tests.find(x => String(x.id) === String(id));
+  if(!t) return;
+  document.getElementById('testId').value = t.id;
+  document.getElementById('testQuote').value = t.quote || '';
+  document.getElementById('testName').value = t.name || '';
+  document.getElementById('testPosition').value = t.position || '';
+  document.getElementById('testAvatar').value = t.avatar || '';
+  document.getElementById('testModal').classList.add('open');
+}
+
+window.deleteTestimonial = async function(id) {
+  if(confirm('Delete this testimonial?')) {
+    let tests = await getCloudData('testimonials', []);
+    tests = tests.filter(x => String(x.id) !== String(id));
+    await setCloudData('testimonials', tests);
+    await loadDashboardData();
+    showToast('Testimonial deleted');
+  }
+}
+
+window.viewMessage = async function(id) {
+  const msgs = await getCloudData('messages', []);
+  const m = msgs.find(x => String(x.id) === String(id));
+  if(!m) return;
+  const body = document.getElementById('msgModalBody');
+  if (body) {
+    body.innerHTML = `
+      <div style="margin-bottom:12px;"><strong>From:</strong> ${m.name || 'Anonymous'}</div>
+      <div style="margin-bottom:12px;"><strong>Email:</strong> ${m.email || '-'}</div>
+      <div style="margin-bottom:12px;"><strong>Subject:</strong> ${m.subject || '-'}</div>
+      <div style="margin-bottom:12px;"><strong>Date:</strong> ${m.date || '-'}</div>
+      <hr style="border-color:rgba(255,255,255,0.1); margin:12px 0;">
+      <div style="white-space:pre-wrap;">${m.message || ''}</div>
+    `;
+  }
+  document.getElementById('msgModal')?.classList.add('open');
+}
+
+window.deleteMessage = async function(id) {
+  if(confirm('Delete this message?')) {
+    let msgs = await getCloudData('messages', []);
+    msgs = msgs.filter(x => String(x.id) !== String(id));
+    await setCloudData('messages', msgs);
+    await loadDashboardData();
+    showToast('Message deleted');
   }
 }
 
